@@ -10,7 +10,10 @@ public class ObjectiveTrigger : MonoBehaviour
         {
             activated = true;
             GameManager.Instance.ActivateTrigger();
-            GetComponent<Renderer>().material.color = Color.green; // Changes to green when touched
+
+            // Disable the whole trigger object - hides the crystal effect child
+            // and prevents the player from collecting it again
+            gameObject.SetActive(false);
         }
     }
 }
