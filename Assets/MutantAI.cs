@@ -21,6 +21,7 @@ public class MutantAI : MonoBehaviour
     [Header("Attack")]
     public int attackDamage = 10;         // HP removed from the player per hit
     public float attackCooldown = 1.5f;   // Seconds between attacks
+    public float damageDelay = 1.3f;      // Wait this long after the swipe starts before dealing damage (matches the strike moment in the animation)
 
     private Animator animator;
     private float lastAttackTime = -999f; // Set far in the past so the first attack isn't blocked by cooldown
@@ -100,7 +101,7 @@ public class MutantAI : MonoBehaviour
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
 
-    // Plays the attack animation and deals damage if the cooldown has elapsed
+    // Plays the attack animation and schedules the damage to land mid-swing
     private void TryAttack()
     {
         if (Time.time - lastAttackTime < attackCooldown) return;
@@ -108,9 +109,19 @@ public class MutantAI : MonoBehaviour
         lastAttackTime = Time.time;
         animator.SetTrigger("attack");
 
-        // Deal damage immediately when the attack starts.
-        // For more accurate timing we could use Animation Events, but this is good enough.
-        if (GameManager.Instance != null)
+        // Wait until the swipe animation has visually connected before applying damage
+        Invoke(nameof(ApplyAttackDamage), damageDelay);
+    }
+
+    // Called via Invoke after the damage delay. Damage lands only if the player is still
+    // close enough - small movement won't dodge, but actually running away will.
+    private void ApplyAttackDamage()
+    {
+        if (player == null || GameManager.Instance == null) return;
+        if (GameManager.Instance.isWin || GameManager.Instance.currentHP <= 0) return;
+
+        float distance = Vector3.Distance(transform.position, player.position);
+        if (distance <= attackRange + 1f)
         {
             GameManager.Instance.TakeDamage(attackDamage);
         }
