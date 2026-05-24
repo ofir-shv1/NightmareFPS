@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ObstacleCollision : MonoBehaviour
 {
-    // עובד אם הכדור מוגדר כמוצק
+    // Runs if the collider is set as solid
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
@@ -14,7 +14,7 @@ public class ObstacleCollision : MonoBehaviour
         }
     }
 
-    // עובד אם הכדור מוגדר כטריגר (רוח רפאים)
+    // Runs if the collider is set as a trigger (ghost)
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))

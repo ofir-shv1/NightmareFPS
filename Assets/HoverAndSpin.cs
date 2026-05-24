@@ -2,24 +2,24 @@ using UnityEngine;
 
 public class HoverAndSpin : MonoBehaviour
 {
-    public float spinSpeed = 100f; // מהירות הסיבוב
-    public float hoverHeight = 0.25f; // כמה גבוה האובייקט יעלה וירד
-    public float hoverSpeed = 2f; // מהירות הריחוף
+    public float spinSpeed = 100f; // Rotation speed
+    public float hoverHeight = 0.25f; // How high the object will move up and down
+    public float hoverSpeed = 2f; // Hover speed
 
     private Vector3 startPos;
 
     void Start()
     {
-        // שומרים את נקודת ההתחלה כדי שהאובייקט לא יעוף לחלל
-        startPos = transform.position; 
+        // Save the starting position so the object doesn't fly off into space
+        startPos = transform.position;
     }
 
     void Update()
     {
-        // 1. פקודת הסיבוב (סביב ציר ה-Y)
+        // 1. Rotation (around the Y axis)
         transform.Rotate(Vector3.up * spinSpeed * Time.deltaTime);
 
-        // 2. פקודת הריחוף (מעלה ומטה בתנועה גלית)
+        // 2. Hover (up and down in a wave motion)
         float newY = startPos.y + Mathf.Sin(Time.time * hoverSpeed) * hoverHeight;
         transform.position = new Vector3(startPos.x, newY, startPos.z);
     }

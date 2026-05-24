@@ -5,7 +5,7 @@ public class MenuHandler : MonoBehaviour
 {
     public void StartGame()
     {
-        // הפקודה הזו טוענת את הסצנה של המשחק שלך
+        // This command loads your game scene
         SceneManager.LoadScene("SampleScene");
     }
 }

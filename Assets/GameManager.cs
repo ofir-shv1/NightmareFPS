@@ -39,18 +39,18 @@ public class GameManager : MonoBehaviour
         GUI.Label(new Rect(20, 20, 200, 40), "HP: " + currentHP);
         GUI.Label(new Rect(20, 60, 200, 40), "Triggers: " + triggersCount + " / 4");
 
-        // --- ניצחון ---
+        // --- Win ---
         if (triggersCount >= 4 || isWin)
         {
             isWin = true;
-            
-            // שחרור העכבר כדי שיהיה אפשר ללחוץ!
+
+            // Release the cursor so it's possible to click!
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
             GUI.color = Color.green;
             GUI.Label(new Rect(Screen.width / 2 - 60, Screen.height / 2 - 60, 200, 40), "YOU WIN!");
-            GUI.color = Color.white; 
+            GUI.color = Color.white;
 
             if (GUI.Button(new Rect(Screen.width / 2 - 80, Screen.height / 2, 160, 40), "Play Again?"))
             {
@@ -58,10 +58,10 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // --- הפסד ---
+        // --- Lose ---
         if (currentHP <= 0)
         {
-            // שחרור העכבר כדי שיהיה אפשר ללחוץ!
+            // Release the cursor so it's possible to click!
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
