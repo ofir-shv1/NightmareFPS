@@ -2,31 +2,27 @@ using UnityEngine;
 
 public class HealCube : MonoBehaviour
 {
-    public int healAmount = 50; // כמה חיים הקובייה הזו תוסיף
+    public int healAmount = 50; // How many HP this cube restores
 
     private void OnTriggerEnter(Collider other)
     {
-        // בודק אם האובייקט שנגע בקובייה הוא השחקן
+        // Check if the object that touched the cube is the player
         if (other.CompareTag("Player"))
         {
-            // מוצא את ה-GameManager שנמצא במשחק
-            GameManager gameManager = FindObjectOfType<GameManager>();
-
-            if (gameManager != null)
+            if (GameManager.Instance != null)
             {
-                // מוסיף חיים לשחקן (שים לב: אם המשתנה ב-GameManager שלך כתוב קצת אחרת, תתקן בהתאם)
-                gameManager.currentHP += healAmount;
+                GameManager.Instance.currentHP += healAmount;
 
-                // שומר שהחיים לא יעברו את ה-100 (כדי שלא יהיה באג של חיים אינסופיים)
-                if (gameManager.currentHP > 100)
+                // Cap HP at 100 (so we don't get an infinite-HP bug)
+                if (GameManager.Instance.currentHP > 100)
                 {
-                    gameManager.currentHP = 100;
+                    GameManager.Instance.currentHP = 100;
                 }
 
-                Debug.Log("Player healed! Current HP: " + gameManager.currentHP);
+                Debug.Log("Player healed! Current HP: " + GameManager.Instance.currentHP);
             }
 
-            // מוחק את קוביית הריפוי מהעולם אחרי שהשחקן אסף אותה
+            // Destroy the heal cube after the player picked it up
             Destroy(gameObject);
         }
     }

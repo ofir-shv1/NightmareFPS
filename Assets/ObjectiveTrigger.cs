@@ -10,7 +10,7 @@ public class ObjectiveTrigger : MonoBehaviour
         {
             activated = true;
             GameManager.Instance.ActivateTrigger();
-            GetComponent<Renderer>().material.color = Color.green; // משתנה לירוק כשנוגעים בו
+            GetComponent<Renderer>().material.color = Color.green; // Changes to green when touched
         }
     }
 }
