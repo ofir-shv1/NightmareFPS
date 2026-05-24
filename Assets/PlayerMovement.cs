@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     private float xRotation = 0f;
+    private int framesToSkipMouse = 3; // Skip a few frames to let the Input System settle - prevents the initial mouse delta spike
 
     void Start()
     {
@@ -17,10 +18,27 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // The Input System can return huge mouse delta values during the first frames
+        // after the cursor is locked. Reading those would snap-rotate the player.
+        // Solution: skip mouse input entirely for the first few frames.
+        bool readMouse = true;
+        if (framesToSkipMouse > 0)
+        {
+            framesToSkipMouse--;
+            readMouse = false;
+        }
+
         // 1. Camera rotation with the mouse (using the new Input System)
-        if (Mouse.current != null)
+        if (readMouse && Mouse.current != null)
         {
             Vector2 mouseDelta = Mouse.current.delta.ReadValue() * mouseSensitivity;
+
+            // Extra safety: ignore frames where the delta is unreasonably large (still a spike)
+            const float MAX_DELTA_PER_FRAME = 30f;
+            if (Mathf.Abs(mouseDelta.x) > MAX_DELTA_PER_FRAME || Mathf.Abs(mouseDelta.y) > MAX_DELTA_PER_FRAME)
+            {
+                mouseDelta = Vector2.zero;
+            }
 
             float mouseX = mouseDelta.x;
             float mouseY = mouseDelta.y;

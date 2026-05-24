@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI; // Needed for the damage flash Image
 using TMPro; // Needed for TextMeshProUGUI
 
 public class GameManager : MonoBehaviour
@@ -26,6 +27,15 @@ public class GameManager : MonoBehaviour
     // Drag the Player object's PlayerMovement script here so we can disable it on win/lose
     public PlayerMovement playerMovement;
 
+    [Header("Damage Flash")]
+    // Drag a full-screen red Image on the Canvas here to flash when the player takes damage
+    public Image damageFlashImage;
+    public float damageFlashDuration = 0.4f; // How long the flash takes to fade out
+    public float damageFlashMaxAlpha = 0.5f; // How opaque the flash is at peak (0..1)
+
+    // Internal countdown timer for the damage flash fade
+    private float damageFlashTimer = 0f;
+
     // Internal flag so we only show the lose panel once
     private bool isLose = false;
 
@@ -48,6 +58,9 @@ public class GameManager : MonoBehaviour
         if (hpText != null) hpText.text = "HP: " + currentHP;
         if (triggersText != null) triggersText.text = "Triggers: " + triggersCount + " / 4";
 
+        // Fade out the damage flash over time
+        UpdateDamageFlash();
+
         // --- Win check ---
         // If the player collected all 4 triggers and didn't already win/lose - show the win panel
         if (triggersCount >= 4 && !isWin && !isLose)
@@ -67,13 +80,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Called from ObstacleCollision when the player touches a danger object
+    // Called from ObstacleCollision / MutantAI when the player takes damage
     public void TakeDamage(int damage)
     {
         if (currentHP > 0 && !isWin)
         {
             currentHP -= damage;
             if (currentHP <= 0) currentHP = 0;
+
+            // Trigger the red screen flash
+            damageFlashTimer = damageFlashDuration;
         }
     }
 
@@ -107,5 +123,20 @@ public class GameManager : MonoBehaviour
         UnlockCursor();
         Time.timeScale = 0f;
         if (playerMovement != null) playerMovement.enabled = false;
+    }
+
+    // Lerps the damage flash alpha from max down to 0 over damageFlashDuration seconds
+    private void UpdateDamageFlash()
+    {
+        if (damageFlashImage == null) return;
+
+        if (damageFlashTimer > 0f)
+        {
+            damageFlashTimer -= Time.deltaTime;
+            float t = Mathf.Clamp01(damageFlashTimer / damageFlashDuration);
+            Color c = damageFlashImage.color;
+            c.a = t * damageFlashMaxAlpha;
+            damageFlashImage.color = c;
+        }
     }
 }
