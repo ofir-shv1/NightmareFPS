@@ -1,19 +1,73 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; 
+using UnityEngine.SceneManagement;
+using TMPro; // Needed for TextMeshProUGUI
 
 public class GameManager : MonoBehaviour
 {
+    // Singleton instance - lets any script reach the GameManager via GameManager.Instance
     public static GameManager Instance;
 
+    [Header("Game State")]
     public int currentHP = 100;
     public int triggersCount = 0;
     public bool isWin = false;
 
+    [Header("HUD")]
+    // Drag the HUD text elements (HP and Triggers) into these slots in the Inspector
+    public TextMeshProUGUI hpText;
+    public TextMeshProUGUI triggersText;
+
+    [Header("End Screens")]
+    // Drag the WinPanel and LosePanel GameObjects from the Canvas into these slots
+    public GameObject winPanel;
+    public GameObject losePanel;
+
+    [Header("Player")]
+    // Drag the Player object's PlayerMovement script here so we can disable it on win/lose
+    public PlayerMovement playerMovement;
+
+    // Internal flag so we only show the lose panel once
+    private bool isLose = false;
+
     void Awake()
     {
+        // Save this instance into the static field on game start
         Instance = this;
     }
 
+    void Start()
+    {
+        // Make sure the end-game panels are hidden when the game begins
+        if (winPanel != null) winPanel.SetActive(false);
+        if (losePanel != null) losePanel.SetActive(false);
+    }
+
+    void Update()
+    {
+        // Refresh the HUD text every frame so it always shows the current values
+        if (hpText != null) hpText.text = "HP: " + currentHP;
+        if (triggersText != null) triggersText.text = "Triggers: " + triggersCount + " / 4";
+
+        // --- Win check ---
+        // If the player collected all 4 triggers and didn't already win/lose - show the win panel
+        if (triggersCount >= 4 && !isWin && !isLose)
+        {
+            isWin = true;
+            if (winPanel != null) winPanel.SetActive(true);
+            FreezeGame();
+        }
+
+        // --- Lose check ---
+        // If the player ran out of HP and didn't already win/lose - show the lose panel
+        if (currentHP <= 0 && !isLose && !isWin)
+        {
+            isLose = true;
+            if (losePanel != null) losePanel.SetActive(true);
+            FreezeGame();
+        }
+    }
+
+    // Called from ObstacleCollision when the player touches a danger object
     public void TakeDamage(int damage)
     {
         if (currentHP > 0 && !isWin)
@@ -23,6 +77,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // Called from ObjectiveTrigger when the player collects a trigger
     public void ActivateTrigger()
     {
         if (!isWin)
@@ -31,48 +86,26 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void OnGUI()
+    // Hooked up to the "Play Again" / "Try Again" buttons in the Inspector
+    public void RestartGame()
     {
-        GUI.skin.label.fontSize = 24;
-        GUI.skin.button.fontSize = 20;
+        // Reset time scale in case the game was paused
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 
-        GUI.Label(new Rect(20, 20, 200, 40), "HP: " + currentHP);
-        GUI.Label(new Rect(20, 60, 200, 40), "Triggers: " + triggersCount + " / 4");
+    // Releases the mouse cursor so the player can click the end-screen buttons
+    private void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 
-        // --- Win ---
-        if (triggersCount >= 4 || isWin)
-        {
-            isWin = true;
-
-            // Release the cursor so it's possible to click!
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            GUI.color = Color.green;
-            GUI.Label(new Rect(Screen.width / 2 - 60, Screen.height / 2 - 60, 200, 40), "YOU WIN!");
-            GUI.color = Color.white;
-
-            if (GUI.Button(new Rect(Screen.width / 2 - 80, Screen.height / 2, 160, 40), "Play Again?"))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            }
-        }
-
-        // --- Lose ---
-        if (currentHP <= 0)
-        {
-            // Release the cursor so it's possible to click!
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            GUI.color = Color.red;
-            GUI.Label(new Rect(Screen.width / 2 - 70, Screen.height / 2 - 60, 200, 40), "GAME OVER");
-            GUI.color = Color.white; 
-
-            if (GUI.Button(new Rect(Screen.width / 2 - 80, Screen.height / 2, 160, 40), "Try Again"))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            }
-        }
+    // Stops time and disables player movement when the game ends
+    private void FreezeGame()
+    {
+        UnlockCursor();
+        Time.timeScale = 0f;
+        if (playerMovement != null) playerMovement.enabled = false;
     }
 }
